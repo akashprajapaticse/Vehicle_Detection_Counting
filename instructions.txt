@@ -1,0 +1,169 @@
+# ================================
+#  VEHICLE DETECTION & COUNTING
+#  Setup + Run Instructions
+# ================================
+
+This guide walks you through setting up and running the Vehicle Detection & Counting project, which uses:
+- Python (Flask + YOLOv8)
+- Node.js (Express)
+- OpenCV for frame-by-frame detection
+
+Follow each step carefully, even if you have no packages installed beforehand.
+
+---------------------------------
+1. PREREQUISITES
+---------------------------------
+1. Python 3.7+ installed (https://www.python.org/downloads/)
+2. Node.js 14+ installed (https://nodejs.org/en/download/)
+3. Git (optional, but helpful for code management)
+
+---------------------------------
+2. CLONE OR DOWNLOAD THE PROJECT
+---------------------------------
+1. Place the project folder "vehicleDetection_Counting" somewhere on your machine.
+   The folder structure should look like this:
+
+   vehicleDetection_Counting/
+   ├── node_modules/         (generated after npm install)
+   ├── public/
+   │   ├── index.html
+   │   ├── script.js
+   │   └── style.css
+   ├── uploads/              (will store uploaded video files)
+   ├── yolov8n.pt            (YOLOv8 model file)
+   ├── detect.py             (Flask + YOLO detection logic)
+   ├── server.js             (Node.js server for the frontend)
+   ├── package.json          (Node.js package info)
+   ├── package-lock.json     (auto-generated after npm install)
+   ├── requirements.txt      (Python dependencies)
+   └── .gitignore            (optional)
+
+---------------------------------
+3. PYTHON DEPENDENCIES
+---------------------------------
+Open a terminal (Command Prompt, PowerShell, or Bash) inside the "vehicleDetection_Counting" folder and run:
+
+   pip install -r requirements.txt
+
+The provided requirements.txt should contain (at least) these lines:
+
+   Flask==2.2.3
+   opencv-python-headless==4.7.0.72
+   ultralytics==8.0.47
+
+This installs:
+- Flask (for the web server in Python)
+- OpenCV (for image processing, "headless" version without GUI)
+- Ultralytics (includes YOLOv8 for detection)
+
+If you see errors about PyTorch or Torch not found, ultralytics will install them automatically. Otherwise, you might need:
+
+   pip install torch torchvision torchaudio
+
+---------------------------------
+4. NODE.JS DEPENDENCIES
+---------------------------------
+Still in the same folder, run:
+
+   npm install
+
+This installs dependencies from "package.json" (e.g., "express"). If you have no package.json, create one with:
+
+   npm init -y
+   npm install express
+
+---------------------------------
+5. START THE FLASK (PYTHON) APP
+---------------------------------
+1. In a terminal, navigate to the "vehicleDetection_Counting" folder.
+2. Run:
+
+   python detect.py
+
+3. You should see output like:
+
+   DEBUG: detect.py loaded!
+   DEBUG: YOLO model loaded successfully!
+   DEBUG: Flask app starting on 0.0.0.0:5000
+   ...
+
+4. Confirm Flask is working by opening:
+   http://127.0.0.1:5000/test
+   in your browser. You should see: "Test route is working!"
+
+---------------------------------
+6. START THE NODE.JS SERVER
+---------------------------------
+1. Open a second terminal in the same folder (while Flask is still running).
+2. Run:
+
+   node server.js
+
+3. You should see:
+
+   🚀 Node.js server running at → http://localhost:3001
+
+---------------------------------
+7. OPEN THE FRONTEND
+---------------------------------
+1. In your browser, visit:
+
+   http://localhost:3001
+
+2. You will see a page titled "Vehicle Detection" with:
+   - An <img> tag referencing http://127.0.0.1:5000/video_feed
+   - Buttons: "Upload Video", "Stop Detection", "Test Route"
+
+---------------------------------
+8. USAGE
+---------------------------------
+- **Upload Video**: 
+   1. Click "Upload Video".
+   2. Choose an .mp4 or .avi file.
+   3. Watch the Flask terminal for debug logs (e.g., "Video file uploaded -> uploads/test_file.mp4").
+   4. YOLO detection starts automatically, drawing bounding boxes and counting vehicles in each frame.
+   5. The processed frames appear in the <img> on the webpage.
+
+- **Vehicle Count**:
+   - Each frame shows "Vehicle Count: X" in the top-left corner.
+   - Vehicles have green bounding boxes labeled "Vehicle".
+
+- **Stop Detection**:
+   1. Click "Stop Detection".
+   2. Flask logs: "DEBUG: /stop route called."
+   3. The detection loop ends.
+
+- **Test Route**:
+   1. Click "Test Route".
+   2. You should see an alert with "Response from /test: Test route is working!"
+
+---------------------------------
+9. TROUBLESHOOTING
+---------------------------------
+1. If http://127.0.0.1:5000/test returns "Not Found", check:
+   - Is detect.py still running?
+   - Did you modify the port or host?
+
+2. If the video feed is blank:
+   - Check Flask logs for "DEBUG: cap.isOpened() returned False" (OpenCV can't open the file).
+   - Confirm the file is valid and not empty.
+   - Try a different format (.avi or re-encoded .mp4).
+
+3. If detection is slow:
+   - YOLOv8 can be CPU-intensive. A GPU is recommended for faster inference.
+   - Lower the resolution or use a smaller YOLO model (like yolov8n).
+
+4. If you see "Vehicle Count: 0" always:
+   - Check if your video has vehicles in YOLO's known classes (car=2, motorcycle=3, bus=5, truck=7).
+   - Adjust the class IDs in the code if needed.
+
+---------------------------------
+10. SUMMARY
+---------------------------------
+1. "pip install -r requirements.txt" to install Python packages.
+2. "npm install" to install Node.js packages.
+3. "python detect.py" to start YOLO detection on port 5000.
+4. "node server.js" to serve the frontend on port 3001.
+5. "http://localhost:3001" to open the interface.
+
+You’re good to go!
