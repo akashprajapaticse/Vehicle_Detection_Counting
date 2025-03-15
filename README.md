@@ -23,11 +23,8 @@ This project is a **Vehicle Detection and Counting System** using **YOLO v8** wi
 ---
 
 ## 📸 **Screenshots**
-### 🚀 Live Detection Example:
-![Live Detection](./screenshots/live_detection.png)
-
-### 📊 Counting Example:
-![Counting](./screenshots/counting.png)
+### 🚀 Live Detection and Counting Example:
+![Live Detection](./screenshot.png)
 
 ---
 
