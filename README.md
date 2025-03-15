@@ -51,13 +51,13 @@ This project is a **Vehicle Detection and Counting System** using **YOLO v8** wi
 ## 🚀 **Setup and Installation**
 ### ✅ **1. Clone the repository**:
 ```bash
-git clone https://github.com/akashprajapaticse/vehicle-detection-counting.git
+git clone https://github.com/akashprajapaticse/Vehicle_Detection_Counting.git
 ```
 
 ### ✅ **2. Set up Python Backend**
 1. Navigate to the project folder:
 ```bash
-cd vehicle-detection-counting
+cd Vehicle_Detection_Counting
 ```
 
 2. Create and activate a virtual environment:
@@ -156,7 +156,3 @@ This project is licensed under the **MIT License**.
 ## ⭐ **Show Your Support**
 If you like this project, give it a ⭐ on GitHub!
 ```
-
----
-
-This README covers all necessary details for setup, usage, and debugging. Let me know if you want to modify anything! 😎
