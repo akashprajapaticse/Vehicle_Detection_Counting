@@ -155,4 +155,3 @@ This project is licensed under the **MIT License**.
 
 ## ⭐ **Show Your Support**
 If you like this project, give it a ⭐ on GitHub!
-```
