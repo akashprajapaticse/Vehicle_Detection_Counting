@@ -1,154 +1,78 @@
-# 🚗 Vehicle Detection and Counting System
+```markdown
+# 🚗 Vehicle Detection and Counting using YOLOv8 (Flask-Based)
 
-This project is a **Vehicle Detection and Counting System** using **YOLO v8** with a Flask backend for YOLO inference and a Node.js-based frontend. It allows users to upload videos for real-time vehicle detection and counting.
-
----
-
-## 📌 **Features**
-✅ Real-time vehicle detection using YOLO v8  
-✅ Vehicle counting and bounding box visualization  
-✅ Flask backend for YOLO inference  
-✅ Node.js frontend for live streaming  
-✅ Supports MJPEG video stream  
-✅ REST endpoints for video upload and control  
+This project performs **vehicle detection and counting** from a video file using **YOLOv8** and **Flask**. It uses OpenCV to read frames, perform object detection with YOLOv8, and count detected vehicles in real-time. The detection results are visualized with bounding boxes.
 
 ---
 
-## 🛠️ **Tech Stack**
-- **Backend:** Flask (Python)  
-- **Model:** YOLO v8 (ultralytics)  
-- **Frontend:** Node.js, Express.js  
-- **Libraries:** OpenCV, TensorFlow, Flask, Socket.io  
+## ✅ Features
+- Vehicle detection using YOLOv8
+- Real-time counting from video files
+- Uses Flask for simple backend execution
+- Efficient processing with OpenCV
 
 ---
 
-## 📸 **Screenshots**
-### 🚀 Live Detection and Counting Example:
-![Live Detection](./screenshot.png)
+## 🛠 Tech Stack
+- **Language**: Python  
+- **Framework**: Flask  
+- **Model**: YOLOv8 (`yolov8n.pt`)  
+- **Libraries**: OpenCV, Ultralytics, Flask
 
 ---
 
-## 📂 **Folder Structure**
+## 📁 Folder Structure
 ```
-├── models/                # YOLO model files
-├── public/                # Frontend files
-│   ├── index.html         # Main HTML file
-│   ├── styles.css         # Styling
-│   └── script.js          # Frontend logic
-├── uploads/               # Uploaded video files
-├── detect.py              # Flask backend with YOLO detection
-├── server.js              # Node.js server
+├── uploads/               # Folder containing input video(s)
+│   └── test_file.mp4      # Sample video file
+├── yolov8n.pt             # YOLOv8n model file
+├── detect.py              # Main script for detection and counting
 ├── requirements.txt       # Python dependencies
-├── package.json           # Node.js dependencies
-├── README.md              # Project documentation
+├── screenshot.png         # (Optional) Screenshot of output
+└── README.md              # Project documentation
 ```
 
 ---
 
-## 🚀 **Setup and Installation**
-### ✅ **1. Clone the repository**:
+## 🚀 Getting Started
+
+### 1. Clone the repository
 ```bash
 git clone https://github.com/akashprajapaticse/Vehicle_Detection_Counting.git
-```
-
-### ✅ **2. Set up Python Backend**
-1. Navigate to the project folder:
-```bash
 cd Vehicle_Detection_Counting
 ```
 
-2. Create and activate a virtual environment:
+### 2. Set up a Python virtual environment
 ```bash
 python -m venv venv
-source venv/bin/activate   # Linux/MacOS
-.\venv\Scripts\activate   # Windows
+source venv/bin/activate   # For macOS/Linux
+.\venv\Scripts\activate    # For Windows
 ```
 
-3. Install Python dependencies:
+### 3. Install required packages
 ```bash
 pip install -r requirements.txt
 ```
 
-4. Start Flask backend:
+### 4. Run the application
 ```bash
 python detect.py
 ```
 
 ---
 
-### ✅ **3. Set up Node.js Frontend**
-1. Open a new terminal in the same project folder.
-2. Install Node.js dependencies:
-```bash
-npm install
-```
-
-3. Start the Node.js server:
-```bash
-node server.js
-```
+## 📝 Notes
+- Make sure `yolov8n.pt` is present in the project directory.
+- Place your input video inside the `uploads/` folder before running the script.
+- Adjust the video file name/path in `detect.py` if needed.
 
 ---
 
-### ✅ **4. Access the Application**
-- Flask API (YOLO detection) → `http://localhost:5000/test`  
-- Node.js frontend → `http://localhost:3001`  
-- Video feed → `http://localhost:5000/video_feed`  
-
----
-
-## 🎯 **API Endpoints**
-### 🔹 **Upload a Video**  
-`POST` → `/upload`  
-- Accepts a video file  
-- Saves it to `/uploads`  
-- Starts YOLO detection in a separate thread  
-
-### 🔹 **Stop Detection**  
-`POST` → `/stop`  
-- Stops the YOLO detection loop  
-
-### 🔹 **Stream Video Feed**  
-`GET` → `/video_feed`  
-- Returns processed frames as MJPEG stream  
-
-### 🔹 **Test Route**  
-`GET` → `/test`  
-- Confirms Flask backend is running  
-
----
-
-## 🚦 **How It Works**
-1. User uploads a video from the frontend  
-2. Flask backend starts YOLO detection using `threading`  
-3. YOLO detects vehicles in each frame and counts them  
-4. The processed frames are sent to the frontend using Flask’s `Response` object  
-5. Frontend updates in real-time using the video feed  
-
----
-
-## ⚠️ **Troubleshooting**
-❗ **YOLO model load failure**  
-- Ensure that `yolov8n.pt` is present in the root folder.  
-- Run the following command to install `ultralytics`:  
-```bash
-pip install ultralytics
-```
-
-❗ **Port conflict**  
-- Make sure that Flask is using port `5000` and Node.js is using port `3001`.  
-
----
-
-## 📜 **License**
+## 📜 License
 This project is licensed under the **MIT License**.
 
 ---
 
-## 🙌 **Contributors**
-👤 **Akash Prajapati** - [GitHub](https://github.com/akashprajapaticse)  
-
----
-
-## ⭐ **Show Your Support**
-If you like this project, give it a ⭐ on GitHub!
+## 🙌 Author
+**Akash Prajapati** – [GitHub](https://github.com/akashprajapaticse)
+```

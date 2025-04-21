@@ -1,187 +1,154 @@
+# import cv2
+# import numpy as np
+# from ultralytics import YOLO
+
+# # Load the YOLOv8 model
+# model = YOLO('yolov8n.pt')  # Use 'yolov8s.pt' or 'yolov8m.pt' for better accuracy
+
+# # Load your video file here
+# video_path = 'uploads/test_file.mp4'  # Replace with your actual video path
+# cap = cv2.VideoCapture(video_path)
+
+# # Define rhombus ROI as a polygon (you can modify coordinates)
+# rhombus_roi = np.array([[80, 400], [240, 100], [400, 100], [550, 400]], np.int32).reshape((-1, 1, 2))
+
+# while cap.isOpened():
+#     ret, frame = cap.read()
+#     if not ret:
+#         break
+
+#     # Run detection
+#     results = model(frame)
+#     vehicle_count = 0
+
+#     # Draw rhombus
+#     cv2.polylines(frame, [rhombus_roi], isClosed=True, color=(255, 0, 0), thickness=2)
+
+#     for result in results:
+#         for box in result.boxes:
+#             cls = int(box.cls[0])
+#             if cls in [2, 3, 5, 7]:  # Vehicle classes: car, motorcycle, bus, truck
+#                 x1, y1, x2, y2 = map(int, box.xyxy[0])
+#                 cx = int((x1 + x2) / 2)
+#                 cy = int((y1 + y2) / 2)
+
+#                 # Check if the center of the box is inside rhombus ROI
+#                 if cv2.pointPolygonTest(rhombus_roi, (cx, cy), False) >= 0:
+#                     vehicle_count += 1
+#                     cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
+#                     cv2.putText(frame, 'Vehicle', (x1, y1 - 5),
+#                                 cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+#                     cv2.circle(frame, (cx, cy), 3, (0, 255, 255), -1)
+
+#     # Display vehicle count
+#     cv2.putText(frame, f"Vehicles: {vehicle_count}",
+#                 (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+
+#     # Show the frame
+#     cv2.imshow('Vehicle Detection', frame)
+
+#     if cv2.waitKey(1) & 0xFF == ord('q'):
+#         break
+
+# cap.release()
+# cv2.destroyAllWindows()
+
+
 import cv2
-from ultralytics import YOLO
-from flask import Flask, Response, request
+import numpy as np
 import threading
-import os
-import time
+from ultralytics import YOLO
+import tkinter as tk
+from PIL import Image, ImageTk
 
-print("DEBUG: detect.py loaded!")  # Confirms this file is running
+# Load the YOLOv8 model
+model = YOLO('yolov8n.pt')
 
-# Attempt to load YOLO model
-try:
-    model = YOLO('yolov8n.pt')
-    print("DEBUG: YOLO model loaded successfully!")
-except Exception as e:
-    print(f"DEBUG: Error loading YOLO model: {e}")
+# Load video
+video_path = 'uploads/test_file.mp4'
+cap = cv2.VideoCapture(video_path)
 
-app = Flask(__name__)
+# Define rhombus ROI
+rhombus_roi = np.array([[80, 400], [240, 100], [400, 100], [550, 400]], np.int32).reshape((-1, 1, 2))
 
-output_frame = None
-lock = threading.Lock()
-is_running = False
-current_video = None
+# Create Tkinter window
+root = tk.Tk()
+root.title("Vehicle Detection")
+root.geometry("800x700")
+root.resizable(False, False)
 
-def detect_objects():
-    """
-    Reads the video file frame-by-frame, runs YOLO detection,
-    counts vehicles, draws bounding boxes, and syncs playback 
-    to the video’s original FPS for near real-time matching.
-    """
-    global output_frame, lock, is_running, current_video
+# Center the window on the screen
+screen_width = root.winfo_screenwidth()
+screen_height = root.winfo_screenheight()
+x = (screen_width // 2) - (800 // 2)
+y = (screen_height // 2) - (700 // 2)
+root.geometry(f"+{x}+{y}")
 
-    if not current_video:
-        print("DEBUG: No video file set in current_video!")
-        return
+# Add title
+title_label = tk.Label(root, text="Vehicle Detection and Counting", font=("Arial", 20, "bold"), pady=10)
+title_label.pack()
 
-    print(f"DEBUG: Starting detection on {current_video}")
+# Frame to show video
+video_frame = tk.Label(root)
+video_frame.pack()
 
-    cap = cv2.VideoCapture(current_video)
-    print(f"DEBUG: cap.isOpened() returned {cap.isOpened()}")
+# Stop flag
+stop_flag = False
 
-    if not cap.isOpened():
-        print(f"DEBUG: Could not open video: {current_video}")
-        return
-
-    # Read the video's original FPS
-    video_fps = cap.get(cv2.CAP_PROP_FPS)
-    print(f"DEBUG: Video FPS = {video_fps}")
-    if video_fps <= 0:
-        # Fallback if FPS is invalid
-        video_fps = 30.0
-
-    is_running = True
-
-    while cap.isOpened() and is_running:
-        start_time = time.time()  # measure how long detection takes per frame
-
-        ret, frame = cap.read()
-        print(f"DEBUG: ret={ret}")
-
-        if not ret:
-            print("DEBUG: No more frames or error reading frame.")
-            break
-
-        # Run YOLO detection
-        results = model(frame)
-        print(f"DEBUG: Frame processed, {len(results)} results found.")
-
-        # Count vehicles in this frame
-        vehicle_count = 0
-
-        # Draw bounding boxes & increment count
-        for result in results:
-            for box in result.boxes:
-                class_id = int(box.cls[0])
-                # If the class is one of the "vehicle" types (car=2, motorcycle=3, bus=5, truck=7)
-                if class_id in [2, 3, 5, 7]:
-                    vehicle_count += 1
-                    x1, y1, x2, y2 = box.xyxy[0]
-                    cv2.rectangle(frame, (int(x1), int(y1)), (int(x2), int(y2)),
-                                  (0, 255, 0), 2)
-                    cv2.putText(frame, 'Vehicle', (int(x1), int(y1) - 5),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
-
-        # Draw the vehicle count on the top-left corner
-        cv2.putText(frame,
-                    f"Vehicle Count: {vehicle_count}",
-                    (20, 40),  # position
-                    cv2.FONT_HERSHEY_SIMPLEX,
-                    1.0,       # font scale
-                    (0, 255, 0),
-                    2)         # thickness
-
-        # Store the processed frame for streaming
-        with lock:
-            output_frame = frame.copy()
-
-        # Sync to the video’s original FPS
-        frame_time = 1.0 / video_fps  # target time per frame
-        elapsed = time.time() - start_time
-        sleep_time = frame_time - elapsed
-        if sleep_time > 0:
-            time.sleep(sleep_time)
-
-    cap.release()
-    is_running = False
-    print("DEBUG: Detection stopped, cap released.")
-
-@app.route('/test')
-def test_route():
-    """
-    A quick debug route to confirm Flask is running.
-    http://127.0.0.1:5000/test
-    """
-    print("DEBUG: /test route called.")
-    return "Test route is working!"
-
-@app.route('/video_feed')
-def video_feed():
-    """
-    Streams out the processed frames in MJPEG format.
-    """
-    print("DEBUG: /video_feed route called.")
-
-    def generate():
-        global output_frame, lock
-        while True:
-            with lock:
-                if output_frame is None:
-                    # No frames yet, skip
-                    continue
-
-                # Encode frame as JPEG
-                _, buffer = cv2.imencode('.jpg', output_frame)
-                frame_bytes = buffer.tobytes()
-
-            yield (b'--frame\r\n'
-                   b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
-
-    return Response(generate(),
-                    mimetype='multipart/x-mixed-replace; boundary=frame')
-
-@app.route('/upload', methods=['POST'])
-def upload_file():
-    """
-    Receives a video file via POST, saves it, then starts detection.
-    """
-    global current_video, is_running
-
-    print("DEBUG: /upload route called.")
-
-    if is_running:
-        print("DEBUG: Attempted to upload while detection is running.")
-        return 'Detection already running', 400
-
-    if 'videoFile' not in request.files:
-        print("DEBUG: No 'videoFile' in request.")
-        return 'No file uploaded', 400
-
-    file = request.files['videoFile']
-    if file.filename == '':
-        print("DEBUG: File selected has empty filename.")
-        return 'No file selected', 400
-
-    file_path = os.path.join('uploads', file.filename)
-    file.save(file_path)
-    current_video = file_path
-
-    print(f"DEBUG: Video file uploaded -> {file_path}")
-
-    # Start YOLO detection in a new thread
-    threading.Thread(target=detect_objects).start()
-
-    return 'File uploaded and detection started', 200
-
-@app.route('/stop', methods=['POST'])
 def stop_detection():
-    """
-    Sets is_running to False, stopping detect_objects loop.
-    """
-    global is_running
-    print("DEBUG: /stop route called.")
-    is_running = False
-    return 'Detection stopped', 200
+    global stop_flag
+    stop_flag = True
+    root.quit()
 
-if __name__ == '__main__':
-    print("DEBUG: Flask app starting on 0.0.0.0:5000")
-    app.run(host='0.0.0.0', port=5000)
+# Stop button
+stop_button = tk.Button(root, text="Stop Detection", command=stop_detection,
+                        font=("Arial", 14), bg="red", fg="white", pady=5, padx=10)
+stop_button.pack(pady=20)
+
+def update_frame():
+    global stop_flag
+    ret, frame = cap.read()
+    if not ret or stop_flag:
+        cap.release()
+        return
+
+    results = model(frame)
+    vehicle_count = 0
+
+    # Draw rhombus
+    cv2.polylines(frame, [rhombus_roi], isClosed=True, color=(255, 0, 0), thickness=2)
+
+    for result in results:
+        for box in result.boxes:
+            cls = int(box.cls[0])
+            if cls in [2, 3, 5, 7]:  # Car, motorcycle, bus, truck
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                cx = int((x1 + x2) / 2)
+                cy = int((y1 + y2) / 2)
+
+                if cv2.pointPolygonTest(rhombus_roi, (cx, cy), False) >= 0:
+                    vehicle_count += 1
+                    cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 1)
+                    cv2.putText(frame, 'Vehicle', (x1, y1 - 5),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 1)
+                    cv2.circle(frame, (cx, cy), 3, (0, 255, 255), -1)
+
+    # Display vehicle count
+    cv2.putText(frame, f"Vehicles: {vehicle_count}",
+                (20, 40), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (0, 255, 0), 2)
+
+    # Convert BGR to RGB for Tkinter
+    frame_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    img = Image.fromarray(frame_rgb)
+    imgtk = ImageTk.PhotoImage(image=img)
+    video_frame.imgtk = imgtk
+    video_frame.configure(image=imgtk)
+
+    if not stop_flag:
+        video_frame.after(10, update_frame)
+
+# Start video thread
+threading.Thread(target=update_frame).start()
+
+# Start the GUI loop
+root.mainloop()
