@@ -1,4 +1,3 @@
-```markdown
 # Vehicle Detection and Counting
 
 This project uses **YOLOv8** for real-time **vehicle detection and counting** within a custom-defined rhombus Region of Interest (ROI) on a video feed. The detection results are displayed through a user-friendly **Tkinter GUI**.
@@ -74,4 +73,3 @@ python detect.py
 ---
 
 ### 💡 Developed by Akash Prajapati
-```
